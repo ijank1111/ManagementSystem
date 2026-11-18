@@ -1,0 +1,103 @@
+@startuml Code_Structural_Detailed
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Code Structural Diagram - ResolvePro CMS (Detailed)
+
+package "Domain Types (src/types/cms.ts)" {
+    enum UserRole {
+        CONSUMER
+        AGENT
+        SUPPORT
+        MANAGER
+        ADMIN
+    }
+
+    enum ComplaintStatus {
+        LOGGED
+        ASSIGNED_AGENT
+        ASSIGNED_SUPPORT
+        IN_PROGRESS
+        RESOLVED
+        AWAITING_CONFIRMATION
+        CLOSED
+    }
+
+    interface User {
+        +id: string
+        +name: string
+        +email: string
+        +role: UserRole
+        +tenantId: string
+    }
+
+    interface Tenant {
+        +id: string
+        +name: string
+        +logo: string
+        +primaryColor: string
+    }
+
+    interface Complaint {
+        +id: string
+        +title: string
+        +description: string
+        +status: ComplaintStatus
+        +priority: string
+        +category: string
+        +customerId: string
+        +tenantId: string
+        +createdAt: string
+        +updatedAt: string
+    }
+
+    interface ActivityLog {
+        +id: string
+        +complaintId: string
+        +userId: string
+        +action: string
+        +timestamp: string
+        +note: string
+    }
+}
+
+package "State Management (src/store/useStore.ts)" {
+    class CMSState << (S,#FF7700) State >> {
+        +currentUser: User | null
+        +currentTenant: Tenant | null
+        +userProfiles: any[]
+        +tenants: Tenant[]
+        +complaints: Complaint[]
+        +activityLogs: ActivityLog[]
+        +notifications: string[]
+        +loading: boolean
+        +initialized: boolean
+    }
+
+    class useStore << (H,#ADD1B2) Hook >> {
+        +selectAccount(tenantId: string)
+        +joinOrganization(tenantId: string, role: UserRole)
+        +logout()
+        +addComplaint(complaint: Partial<Complaint>)
+        +updateComplaintStatus(id: string, status: ComplaintStatus, note?: string)
+        +addMessage(complaintId: string, note: string, isInternal: boolean)
+        +clearNotification(complaintId: string)
+        -initialize()
+        -fetchAllProfiles(userId: string)
+        -fetchData(tenantId: string)
+    }
+}
+
+package "Infrastructure" {
+    class SupabaseClient << (E,#999999) External >>
+    class ToastUtility << (U,#999999) Utility >>
+}
+
+useStore "1" *-- "1" CMSState : manages
+useStore ..> User : uses
+useStore ..> Complaint : uses
+useStore ..> Tenant : uses
+useStore ..> ActivityLog : uses
+useStore --> SupabaseClient : communicates with
+useStore --> ToastUtility : triggers
+
+@enduml

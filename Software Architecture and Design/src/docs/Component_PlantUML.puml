@@ -1,0 +1,32 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram for ResolvePro CMS - Web Application (Detailed)
+
+Container_Boundary(web_app, "Web Application") {
+    Component(router, "App Router", "React Router 6", "Handles client-side navigation, route guards, and RBAC enforcement.")
+    Component(store, "Global State Store", "Observer Pattern", "Manages multi-tenant context, user profiles, and local state synchronization.")
+    Component(query_client, "Query Client", "TanStack Query", "Handles server-state synchronization, caching, and background data fetching.")
+    Component(supabase_client, "Supabase Client", "Supabase SDK", "Interface for Authentication, Database (PostgreSQL), and Edge Functions.")
+    Component(layout_engine, "Dashboard Layout", "React Component", "Orchestrates the main UI structure, sidebar navigation, and tenant branding.")
+    Component(pages, "Page Components", "React Pages", "Specific views for Dashboard, Complaints, Architecture, and Onboarding.")
+    Component(ui_lib, "UI Component Library", "Shadcn/UI & Tailwind", "Reusable atomic components (Buttons, Cards, Tables, Forms).")
+    Component(notification, "Notification System", "Sonner / Toaster", "Manages real-time user feedback and toast alerts.")
+    Component(hooks, "Custom Hooks", "React Hooks", "Encapsulates reusable logic for mobile detection, toasts, and store access.")
+}
+
+Rel(router, pages, "Renders")
+Rel(router, supabase_client, "Checks session for route guards")
+Rel(pages, store, "Subscribes to context / Dispatches actions")
+Rel(pages, query_client, "Fetches/Mutates data")
+Rel(pages, ui_lib, "Uses for rendering")
+Rel(pages, notification, "Triggers alerts")
+Rel(layout_engine, router, "Provides navigation links")
+Rel(layout_engine, store, "Reads tenant branding")
+Rel(store, supabase_client, "Performs Auth and DB operations")
+Rel(query_client, supabase_client, "Executes SQL queries via API")
+Rel(hooks, store, "Provides easy access to state")
+
+@enduml

@@ -1,0 +1,61 @@
+@startuml Code_Behavioural_Detailed
+title Code Behavioural Diagram - Detailed Complaint Creation Flow
+
+actor "Consumer User" as User
+participant "NewComplaint Page" as UI
+participant "useStore (Hook)" as Store
+participant "Internal Logic" as Logic
+participant "Supabase API" as DB
+participant "Sonner (Toast)" as Toast
+
+User -> UI : Enter Title, Category, Priority, Description
+User -> UI : Click "Submit Complaint"
+UI -> UI : Set loading = true
+UI -> Store : addComplaint(formData)
+
+group Store Execution
+    Store -> Logic : generateShortId()
+    Logic --> Store : returns "ABC123XY"
+    Store -> DB : INSERT into 'complaints' (id, title, ...,<dyad-write path="src/docs/Code_Behavioural_PlantUML.puml" description="Completing the detailed Level 4 Code Behavioural Diagram.">
+@startuml Code_Behavioural_Detailed
+title Code Behavioural Diagram - Detailed Complaint Creation Flow
+
+actor "Consumer User" as User
+participant "NewComplaint Page" as UI
+participant "useStore (Hook)" as Store
+participant "Internal Logic" as Logic
+participant "Supabase API" as DB
+participant "Sonner (Toast)" as Toast
+
+User -> UI : Enter Title, Category, Priority, Description
+User -> UI : Click "Submit Complaint"
+UI -> UI : Set loading = true
+UI -> Store : addComplaint(formData)
+
+group Store Execution
+    Store -> Logic : generateShortId()
+    Logic --> Store : returns "ABC123XY"
+    Store -> DB : INSERT into 'complaints' (id, title, category, priority, customer_id, tenant_id)
+    DB --> Store : returns { data, error }
+    
+    alt Success
+        Store -> Store : fetchData(currentTenant.id)
+        group Background Refresh
+            Store -> DB : SELECT * FROM 'complaints' WHERE tenant_id = ...
+            DB --> Store : returns complaints[]
+            Store -> DB : SELECT * FROM 'activity_logs' WHERE ...
+            DB --> Store : returns logs[]
+            Store -> Store : setState({ complaints, activityLogs })
+        end
+    else Error
+        Store -> Toast : showError(error.message)
+    end
+end
+
+Store --> UI : returns void
+UI -> UI : setTimeout(500ms)
+UI -> Toast : showSuccess("Complaint logged successfully")
+UI -> UI : setFormData(initial)
+UI -> UI : navigate('/complaints')
+
+@enduml

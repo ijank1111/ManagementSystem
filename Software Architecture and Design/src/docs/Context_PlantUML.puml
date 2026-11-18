@@ -1,0 +1,26 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title System Context Diagram for ResolvePro CMS (Level 1)
+
+Person(customer, "Customer (Consumer)", "A customer of a tenant organization (e.g., HSBC, Vodafone) who logs and tracks complaints.")
+Person(agent, "Help Desk Agent / Support", "Staff members who process, respond to, and resolve customer complaints.")
+Person(manager, "Manager / Admin", "Supervisors who monitor performance, view reports, and manage system configuration.")
+
+System(resolvePro, "ResolvePro CMS", "Multi-tenant platform for logging, tracking, and managing complaints with strict data isolation and RBAC.")
+
+System_Ext(supabase, "Supabase Platform", "Provides managed PostgreSQL database, Authentication (JWT), and Row Level Security (RLS) for data isolation.")
+System_Ext(notifications, "Notification Gateway", "External system (Email/SMS) used to alert users of status changes and new messages.")
+System_Ext(crm, "Enterprise CRM", "External system used to synchronize customer profiles and historical data for context.")
+
+Rel(customer, resolvePro, "Logs complaints, tracks status, and replies to agents", "HTTPS/JSON")
+Rel(agent, resolvePro, "Manages assignments, resolves issues, and communicates with customers", "HTTPS/JSON")
+Rel(manager, resolvePro, "Views analytics dashboards and manages team assignments", "HTTPS/JSON")
+
+Rel(resolvePro, supabase, "Authenticates users and persists tenant-isolated data", "SQL/JWT")
+Rel(resolvePro, notifications, "Triggers automated alerts for status updates", "API/Webhooks")
+Rel(resolvePro, crm, "Fetches customer context and history", "REST API")
+
+@enduml

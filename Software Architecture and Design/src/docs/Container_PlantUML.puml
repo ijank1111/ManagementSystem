@@ -1,0 +1,30 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Container Diagram for ResolvePro CMS (Level 2)
+
+Person(user, "User", "Customer, Agent, or Manager of a tenant organization.")
+
+System_Boundary(c1, "ResolvePro CMS") {
+    Container(web_app, "Web Application", "React, TypeScript, Tailwind", "Provides the user interface for logging complaints, viewing dashboards, and managing workflows.")
+    Container(api, "Supabase API Gateway", "PostgREST, GoTrue", "Handles authentication, authorization, and provides a RESTful interface to the database.")
+    ContainerDb(db, "Database", "PostgreSQL", "Stores tenant-isolated data including profiles, complaints, and activity logs. Enforces RLS.")
+    Container(edge_funcs, "Edge Functions", "Deno / TypeScript", "Handles server-side logic, integrations with external APIs, and complex business rules.")
+}
+
+System_Ext(notifications, "Notification Gateway", "Email/SMS Service", "Sends automated alerts to users.")
+System_Ext(crm, "Enterprise CRM", "External API", "Provides customer context and historical data.")
+
+Rel(user, web_app, "Uses", "HTTPS")
+Rel(web_app, api, "Makes API calls to (Auth & Data)", "JSON/HTTPS")
+Rel(web_app, edge_funcs, "Invokes for complex logic", "JSON/HTTPS")
+
+Rel(api, db, "Reads from and writes to", "SQL")
+Rel(edge_funcs, db, "Reads from and writes to", "SQL")
+
+Rel(edge_funcs, notifications, "Triggers alerts via", "REST API")
+Rel(edge_funcs, crm, "Synchronizes data with", "REST API")
+
+@enduml

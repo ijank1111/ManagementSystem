@@ -1,0 +1,53 @@
+@startuml Data_Design_ERD
+!theme plain
+hide circle
+skinparam linetype ortho
+
+entity "Tenant" as tenant {
+  *id : TEXT <<PK>>
+  --
+  name : TEXT
+  logo : TEXT
+  primaryColor : TEXT
+}
+
+entity "Profile" as profile {
+  *id : UUID <<PK>> <<FK>>
+  --
+  email : TEXT
+  name : TEXT
+  role : TEXT
+  tenant_id : TEXT <<FK>>
+  updated_at : TIMESTAMP
+}
+
+entity "Complaint" as complaint {
+  *id : TEXT <<PK>>
+  --
+  title : TEXT
+  description : TEXT
+  status : TEXT
+  priority : TEXT
+  category : TEXT
+  customer_id : UUID <<FK>>
+  tenant_id : TEXT <<FK>>
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+entity "ActivityLog" as log {
+  *id : UUID <<PK>>
+  --
+  complaint_id : TEXT <<FK>>
+  user_id : UUID <<FK>>
+  action : TEXT
+  note : TEXT
+  timestamp : TIMESTAMP
+}
+
+tenant ||--o{ profile : "has many"
+profile ||--o{ complaint : "logs"
+complaint ||--o{ log : "has history"
+profile ||--o{ log : "performs"
+
+@enduml
